@@ -4,8 +4,8 @@ module.exports = async function (ctx, req) {
 
     var responseBody = 'Environment:\n\n';
 
-    for (const item : process.env) {
-        responseBody += item + '\n';
+    for (const item in process.env) {
+        responseBody = responseBody + item + '\n';
     }
     
     ctx.res = {
