@@ -1,5 +1,5 @@
 module.exports = async function (ctx, req) {
-    context.log('entering ' + ctxt.executionContext.functionName + 
+    context.log('entering ' + ctx.executionContext.functionName + 
                 ' (' + ctx.executionContext.invocationId + ')');
 
     var responseBody = 'Environment:\n\n';
