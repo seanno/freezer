@@ -2,10 +2,10 @@ class Freezer {
     constructor(ctx) {
         this.acct = ctx.env['STORAGE_ACCT'];
         this.key = ctx.env['STORAGE_KEY'];
-        this.container = parseUserContainer(ctx.request.headers);
+        this.container = _parseUserContainer(ctx.request.headers);
     }
 
-    #parseUserContainer(headers) {
+    _parseUserContainer(headers) {
         const hdr = headers['x-ms-client-principal'];
         const encoded = Buffer.from(hdr, 'base64');
         const principal = JSON.parse(encoded.toString('ascii'));
@@ -13,7 +13,7 @@ class Freezer {
     }
 
     getContainerName() {
-        return(this.container;)
+        return(this.container);
     }
 
 }
