@@ -5,10 +5,11 @@ module.exports = async function (ctx, req) {
     ctx.log('entering ' + ctx.executionContext.functionName + 
             ' (' + ctx.executionContext.invocationId + ')');
 
-    var freezer = new Freezer(process.env, req.headers);
+    const freezer = new Freezer(process.env, req.headers);
+	const files = await freezer.listFiles();
 
     ctx.res = {
         // status: 200, /* Defaults to 200 */
-        body: freezer.getContainerName()
+        body: JSON.stringify(files)
     };
 }
