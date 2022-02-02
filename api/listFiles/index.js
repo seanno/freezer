@@ -9,6 +9,6 @@ module.exports = async function (ctx, req) {
 
     context.res = {
         // status: 200, /* Defaults to 200 */
-        body: freezer.getContainerName();
+        body: freezer.getContainerName()
     };
 }
