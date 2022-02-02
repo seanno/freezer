@@ -1,21 +1,13 @@
+const User = require('./user');
+
 class Freezer {
-    constructor(ctx) {
-        this.acct = ctx.env['STORAGE_ACCT'];
-        this.key = ctx.env['STORAGE_KEY'];
-        this.container = _parseUserContainer(ctx.request.headers);
+    constructor(env, headers) {
+        this.acct = env['STORAGE_ACCT'];
+        this.key = env['STORAGE_KEY'];
+        this.container = new User(headers).getUserName();
     }
 
-    _parseUserContainer(headers) {
-        const hdr = headers['x-ms-client-principal'];
-        const encoded = Buffer.from(hdr, 'base64');
-        const principal = JSON.parse(encoded.toString('ascii'));
-        return(principal.userDetails)
-    }
-
-    getContainerName() {
-        return(this.container);
-    }
-
+    getContainerName() { return(this.container); }
 }
 
 module.exports = Freezer;
