@@ -1,0 +1,37 @@
+{
+    "routes": [ 
+        {
+            "route": "/.auth/login/aad",
+            "allowedRoles": [ 
+                "anonymous",
+                "authenticated"
+            ]
+        },{
+            "route": "/.auth/login/*",
+            "statusCode": 404
+        },{
+            "route": "/index.html",
+            "allowedRoles": [
+                "reader",
+                "owner",
+                "contributor"
+            ]
+        },{
+            "route": "/api/*",
+            "allowedRoles": [
+                "reader",
+                "owner",
+                "contributor"
+            ]
+        } 
+    ],
+    "navigationFallback": {
+        "rewrite": "/index.html"
+    },
+    "responseOverrides": {
+        "401": { 
+            "statusCode": 302,
+            "redirect": "/.auth/login/aad"
+        }
+    }
+}
