@@ -11,11 +11,11 @@ class User {
     getRoles() { return(this.principal.userRoles); }
 
     hasRole(role) {
-        return(getRoles().includes(role));
+        return(this.getRoles().includes(role));
     }
 
     getUserName() {
-        const details = getUserDetails();
+        const details = this.getUserDetails();
         const ich = details.indexOf('@');
         return(ich == -1 ? details : details.substring(0, ich));
     }
