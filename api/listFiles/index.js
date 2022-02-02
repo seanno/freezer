@@ -7,7 +7,7 @@ module.exports = async function (ctx, req) {
 
     var freezer = new Freezer(process.env, req.headers);
 
-    context.res = {
+    ctx.res = {
         // status: 200, /* Defaults to 200 */
         body: freezer.getContainerName()
     };
