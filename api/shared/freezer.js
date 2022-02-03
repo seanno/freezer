@@ -3,10 +3,19 @@
 
 const User = require('./user');
 
-const { ContainerClient, StorageSharedKeyCredential } = require("@azure/storage-blob");
+const { 
+    ContainerClient, 
+    StorageSharedKeyCredential,
+    ContainerSASPermissions,
+    generateBlobSASQueryParameters
+} = require("@azure/storage-blob");
 
 class Freezer {
 	
+    // +-------+
+    // | Setup |
+    // +-------+
+
     constructor(env, headers) {
 		
         this.acct = env['STORAGE_ACCT'];
@@ -21,20 +30,48 @@ class Freezer {
 
     getContainerName() { return(this.container); }
 
+    // +---------------------+
+    // | Shared Access Stuff |
+    // +---------------------+
+
+    async getUploadToken(name) {
+
+        await this._ensureContainer();
+
+        const token = generateBlobSASQueryParameters({
+            containerName: this.getContainerName(),
+            permissions: ContainerSASPermissions.parse("cw"),
+            blobName: name, 
+            expiresOn: new Date(new Date().valueOf() + 86400)
+        }, this.credential);
+        
+        return(token.toString());
+    }
+
+    // +-----------+
+    // | listFiles |
+    // +-----------+
+
 	async listFiles() {
 		
-		await _ensureContainer();
+		await this._ensureContainer();
 
-		var files = [];
+		var files = {};
 
-		for await (const blob of this.client.listBlobsFlat()) {
-			files.push(blob.name);
+		for await (const blob of this.client.listBlobsFlat({ includeMetadata: true })) {
+            const tier = blob.properties.accessTier;
+            if (!files[tier]) files[tier] = [];
+            files[tier].push(blob);
 		}
 
-		return(files);
+        return(files);
 	}
 	
-	async _ensureContainer() {
+    // +---------+
+    // | Helpers |
+    // +---------+
+
+    async _ensureContainer() {
 		await this.client.createIfNotExists();
 	}
 }

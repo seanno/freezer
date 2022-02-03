@@ -2,27 +2,16 @@
     "routes": [ 
         {
             "route": "/.auth/login/aad",
-            "allowedRoles": [ 
-                "anonymous",
-                "authenticated"
-            ]
+            "allowedRoles": [ "anonymous", "authenticated" ]
         },{
-            "route": "/.auth/login/*",
+            "route": "/.auth/*",
             "statusCode": 404
         },{
             "route": "/index.html",
-            "allowedRoles": [
-                "reader",
-                "owner",
-                "contributor"
-            ]
+            "allowedRoles": [ "reader", "owner", "contributor" ]
         },{
             "route": "/api/*",
-            "allowedRoles": [
-                "reader",
-                "owner",
-                "contributor"
-            ]
+            "allowedRoles": [ "reader", "owner", "contributor" ]
         } 
     ],
     "navigationFallback": {
