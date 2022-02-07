@@ -9,10 +9,7 @@ module.exports = async function (ctx, req) {
     if (!name) throw 'blob name required';
 
     const freezer = new Freezer(process.env, req.headers);
-	const token = await freezer.getUploadToken(name);
+    const url = await freezer.getDownloadUrl(name);
 
-    ctx.res = {
-        // status: 200, /* Defaults to 200 */
-        body: token
-    };
+    ctx.res = { status: 302, headers: { Location: url } };
 }

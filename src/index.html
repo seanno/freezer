@@ -3,6 +3,45 @@
   <head>
 
 	<style>
+
+		body {
+			font: 12px Verdana,Arial,Helvetica;
+		}
+
+		h1 {
+			color: darkslateblue;
+		}
+
+		a {
+			margin-left: 6px;
+			margin-right: 6px;
+		}
+
+		h3 {
+			margin-top: 32px;
+		}
+		
+		table {
+			border-collapse: collapse;
+		}
+
+		td, th {
+			padding: 6px 6px 6px 6px;
+			border: .5px solid black;
+		}
+
+		#activeList td, #activeList th { border-color: darkred; }
+		#activeList { color: darkred; }
+		#activeList tr:nth-child(1) { background: lightpink; }
+
+		#archiveList td, #archiveList th { border-color: darkslateblue; }
+		#archiveList { color: darkslateblue; }
+		#archiveList tr:nth-child(1) { background: lightskyblue; }
+
+		#filePicker { display: none; }
+		#archiveListEmpty { display: none; }
+		#activeListEmpty { display: none; }
+
 	</style>
 
 	<script
@@ -11,22 +50,211 @@
       crossorigin="anonymous">
 	</script>
 
+	<script src="azure-storage-blob.js"></script>
+
 	<script type="text/javascript">
 
-	  // globals & init
-      $(document).ready(function() {
+		var abortController = null;
 
-		  $.get('/api/getUploadToken?name=test.mp4', function(data) {
-			  $("#yo").text(JSON.stringify(data));
-		  });
-	  });
+		// globals & init
+      	$(document).ready(function() {
+
+			$('#uploadButton').click(function(evt) {
+				if (abortController == null) {
+					$("#filePicker").click();
+				}
+				else {
+					abortController.abort();
+					uploadingDone('Cancelled');
+				}
+			});
+
+			$('#filePicker').change(function() {
+				const file = this.files[0];
+				if (file) uploadBlob(file);
+			});
+
+			// attaching these to document picks up dynamically-created items
+		
+			$(document).on('click', '.aGet', function(evt) {
+				evt.preventDefault();
+				window.location = '/api/downloadBlob?name=' + escape(evt.target.dataset.name);
+			});
+
+			$(document).on('click', '.aDel', function(evt) {
+				evt.preventDefault();
+
+				if (!confirm('Thaw file ' + evt.target.dataset.name + '? Files will be ' +
+							 'available the next day (usually no more than 15 hours)')) {
+					return;
+				}	
+
+				$.ajax({
+					url: '/api/deleteFile?name=' + escape(evt.target.dataset.name),
+					type: 'GET',
+					success: function() {
+						const which = evt.target.dataset.which;
+						refreshFileLists(which == 'archive', which == 'active');
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						alert('Failed deleting file: ' + textStatus);
+					}
+				});
+			});
+
+			$(document).on('click', '.aThw', function(evt) {
+				evt.preventDefault();
+
+				if (!confirm('Thaw file ' + evt.target.dataset.name + '? Files will be ' +
+							 'available the next day (usually no more than 15 hours)')) {
+					return;
+				}	
+
+				$.ajax({
+					url: '/api/thawFile?name=' + escape(evt.target.dataset.name),
+					type: 'GET',
+					success: function(status) {
+						alert('Thaw initiated; file should be available for download ' + 
+							  'within 15 hours.');
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						alert('Failed initiating thaw: ' + textStatus);
+					}
+				});
+			});
+
+			refreshFileLists(true, true);
+	  	});
 	  
-	</script>
+		function uploadBlob(file) {
+
+			uploadingStart(file);
+
+			$.get('/api/getUploadBlobUrl?name=' + escape(file.name), function(url) {
+				console.log('blob url: ' + url);
+				const blob = AzureStorageBlob.newBlockBlobClient(url);
+
+				blob.uploadData(file, {
+					abortSignal: abortController.signal,
+					blobHTTPHeaders: { blobContentType: file.type },
+					onProgress: function(evt) { uploadingStatus(evt.loadedBytes); },
+					tier: 'Archive'
+					})
+					.then(function(result) {
+						uploadingDone("Upload complete");
+						refreshFileLists(true, false);
+					}, function(error) {
+						uploadingDone("Error uploading: " + error);
+					}
+				);
+			});
+		}
+
+		function uploadingStart(file) {
+			abortController = new AbortController();
+			$('#uploadingMsg').text('Uploading ' + file.name);
+			$('#bytesUploaded').text('0');
+			$('#bytesTotal').text('of ' + file.size + ' total bytes');
+			$('#uploadButton').text('Cancel Upload');
+		}
+
+		function uploadingDone(msg) {
+			abortController = null;
+			$('#filePicker').val('');
+			$('#uploadingMsg').text(msg);
+			$('#bytesUploaded').text('');
+			$('#bytesTotal').text('');
+			$('#uploadButton').text('Upload File');
+		}
+
+		function uploadingStatus(loadedBytes) {
+			$('#bytesUploaded').text(loadedBytes);
+		}
+
+		function refreshFileLists(refreshArchive, refreshActive) {
+			$.ajax({
+				url: '/api/listFiles',
+				type: 'GET',
+				dataType: 'json',
+				success: function(files) {
+					window.fileList = files;
+					if (refreshArchive) populateFileList('archive', files.archive);
+					if (refreshActive) populateFileList('active', files.active);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					alert('Failed loading files; please refresh.\n' + error);
+				}
+			});
+		}
+
+		function populateFileList(whichList, fileList) {
+
+			$('#' + whichList + 'ListTable').find($("tr")).slice(1).remove();
+
+			if (fileList.length == 0) {
+				$('#' + whichList + 'ListEmpty').show();
+				return;
+			}
+
+			$('#' + whichList + 'ListEmpty').hide();
+
+			const table = document.getElementById(whichList + 'ListTable');
+			const tbody = table.getElementsByTagName('tbody')[0];
+
+			for (file of fileList) {
+				const row = tbody.insertRow();
+				row.insertCell(0).innerText = file.name;
+				row.insertCell(1).innerText = file.properties.contentLength;
+				row.insertCell(2).innerText = new Date(file.properties.createdOn).toDateString();
+
+				var actions = '';
+
+				if (whichList == 'archive') {
+					actions =
+						'<a href="#" class="aThw" data-name="' + file.name + '">thaw</a>' +
+						'<a href="#" class="aDel" data-which="archive" ' +
+							'data-name="' + file.name + '">delete</a>' ;
+				}
+				else {
+					actions = 
+						'<a href="#" class="aGet" data-name="' + file.name + '">download</a>' +
+						'<a href="#" class="aDel" data-which="active" ' +
+							'data-name="' + file.name + '">delete</a>' ;
+				}
+
+				row.insertCell(3).innerHTML = actions;
+			}
+		}
+
+</script>
 	
   </head>
   <body>
-	
-	<div id="yo">loading...</div>
 
+	<h1>The Freezer</span></h1>
+
+	<div id="uploadBar">
+		<button id="uploadButton">Upload File</button>
+		<span id="uploadingMsg"></span><br/>
+		<span id="bytesUploaded"> <span id="bytesTotal"></span>
+	</div>
+
+	<div id="activeList">
+		<h3>Active files :/</h3>
+		<table id="activeListTable">
+			<tr><th>name</th><th>size</th><th>created</th><th>actions</th></tr>
+		</table>	
+		<p id="activeListEmpty">no files</p>
+	</div>
+
+	<div id="archiveList">
+		<h3>Cold Storage :)</h3>
+		<table id="archiveListTable">
+			<tr><th>name</th><th>size</th><th>created</th><th>actions</th></tr>
+		</table>	
+		<p id="archiveListEmpty">no files</p>
+	</div>
+
+	<input type="file" id="filePicker" />
   </body>
 </html>
