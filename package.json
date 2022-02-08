@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@azure/storage-blob": "^12.8.0",
+    "crypto-js": "^4.1.1"
+  }
+}
