@@ -38,6 +38,10 @@
 		#archiveList { color: darkslateblue; }
 		#archiveList tr:nth-child(1) { background: lightskyblue; }
 
+		#info {
+			margin-top: 44px;
+		}
+
 		#filePicker { display: none; }
 		#archiveListEmpty { display: none; }
 		#activeListEmpty { display: none; }
@@ -58,6 +62,12 @@
 
 		// globals & init
       	$(document).ready(function() {
+
+			$.get('/api/misc', function(data) {
+				$("#hdrContainer").text('(' + data.container + ')');
+				$("#infoContainer").text(data.container);
+				$("#infoAccount").text(data.acct);
+			}, 'json');
 
 			$('#uploadButton').click(function(evt) {
 				if (abortController == null) {
@@ -84,10 +94,13 @@
 			$(document).on('click', '.aDel', function(evt) {
 				evt.preventDefault();
 
-				if (!confirm('Thaw file ' + evt.target.dataset.name + '? Files will be ' +
-							 'available the next day (usually no more than 15 hours)')) {
-					return;
-				}	
+				var prompt = 'Delete file ' + evt.target.dataset.name + '?';
+				if (evt.target.dataset.which == 'archive') {
+					prompt += ' Remember you probably spent a ton of time ' +
+							  'getting it uploaded in the first place...';
+				}
+
+				if (!confirm(prompt)) return;
 
 				$.ajax({
 					url: '/api/deleteFile?name=' + escape(evt.target.dataset.name),
@@ -114,7 +127,12 @@
 					url: '/api/thawFile?name=' + escape(evt.target.dataset.name),
 					type: 'GET',
 					success: function(status) {
-						if (status != 'OK') alert('Failed initiating thaw');
+						if (status == 'OK') {
+							refreshFileLists(false, true);
+						}
+						else {
+							alert('Failed initiating thaw');
+						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						alert('Failed initiating thaw: ' + textStatus);
@@ -233,7 +251,7 @@
   </head>
   <body>
 
-	<h1>The Freezer</span></h1>
+	<h1>The Freezer <span id="hdrContainer"></span></h1>
 
 	<div id="uploadBar">
 		<button id="uploadButton">Upload File</button>
@@ -255,6 +273,22 @@
 			<tr><th>name</th><th>size</th><th>created</th><th>actions</th></tr>
 		</table>	
 		<p id="archiveListEmpty">no files</p>
+	</div>
+
+	<div id="info">
+		<p>
+			Use the Freezer to store large files that you want to be safe for the future
+			but will rarely if ever be downloaded (they are cheap to store, but cost
+			some money to retrieve). It's better to have a few large files than many small
+			ones, so combine logical data into zips or other archives.
+		</p><p>
+			To retrieve data, use the "thaw" action. Pulling a file out of the Freezer
+			will take approximately fifteen hours, at which time you will be able to download
+			it from the "active" section above.
+		</p><p>
+			These files are stored in container <b><span id="infoContainer"></b> within
+			the Azure storage account <b><span id="infoAccount"></b>.
+		</p>
 	</div>
 
 	<input type="file" id="filePicker" />
