@@ -114,8 +114,7 @@
 					url: '/api/thawFile?name=' + escape(evt.target.dataset.name),
 					type: 'GET',
 					success: function(status) {
-						alert('Thaw initiated; file should be available for download ' + 
-							  'within 15 hours.');
+						if (status != 'OK') alert('Failed initiating thaw');
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						alert('Failed initiating thaw: ' + textStatus);
@@ -214,6 +213,9 @@
 						'<a href="#" class="aThw" data-name="' + file.name + '">thaw</a>' +
 						'<a href="#" class="aDel" data-which="archive" ' +
 							'data-name="' + file.name + '">delete</a>' ;
+				}
+				else if (file.thawing) {
+					actions = '<i><b>thaw pending</b></i>';
 				}
 				else {
 					actions = 

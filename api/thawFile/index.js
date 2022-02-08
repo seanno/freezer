@@ -9,7 +9,7 @@ module.exports = async function (ctx, req) {
     if (!name) throw 'blob name required';
 
     const freezer = new Freezer(process.env, req.headers);
-    const status = freezer.thawFile(name);
-    
-    ctx.res = { body: status };
+    const success = await freezer.thawFile(name);
+
+    ctx.res = { body: (success ? 'OK' : 'Error') };
 }
