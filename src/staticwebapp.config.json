@@ -7,12 +7,23 @@
             "route": "/.auth/*",
             "statusCode": 404
         },{
+            "route": "/index.html",
+            "allowedRoles": [ "contributor" ]
+        },{
+            "route": "/api/*",
+            "allowedRoles": [ "contributor" ]
+        },{
             "route": "/*",
-            "allowedRoles": [ "reader", "owner", "contributor" ]
+            "rewrite": "/index.html",
+            "allowedRoles": [ "contributor" ]
         }
     ],
     "responseOverrides": {
         "401": { 
+            "statusCode": 302,
+            "redirect": "/.auth/login/aad"
+        },
+        "403": { 
             "statusCode": 302,
             "redirect": "/.auth/login/aad"
         }
