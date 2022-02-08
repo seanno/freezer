@@ -70,6 +70,7 @@
 			}, 'json');
 
 			$('#uploadButton').click(function(evt) {
+				evt.preventDefault();
 				if (abortController == null) {
 					$("#filePicker").click();
 				}
@@ -171,7 +172,7 @@
 			abortController = new AbortController();
 			$('#uploadingMsg').text('Uploading ' + file.name);
 			$('#bytesUploaded').text('0');
-			$('#bytesTotal').text('of ' + file.size + ' total bytes');
+			$('#bytesTotal').text(' of ' + file.size + ' total bytes');
 			$('#uploadButton').text('Cancel Upload');
 		}
 
@@ -256,7 +257,7 @@
 	<div id="uploadBar">
 		<button id="uploadButton">Upload File</button>
 		<span id="uploadingMsg"></span><br/>
-		<span id="bytesUploaded"> <span id="bytesTotal"></span>
+		<span id="bytesUploaded"></span><span id="bytesTotal"></span>
 	</div>
 
 	<div id="activeList">
