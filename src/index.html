@@ -64,7 +64,7 @@
       	$(document).ready(function() {
 
 			$.get('/api/misc', function(data) {
-				$("#hdrContainer").text('(' + data.container + ')');
+				$("#hdrContainer").text(data.container);
 				$("#infoContainer").text(data.container);
 				$("#infoAccount").text(data.acct);
 			}, 'json');
@@ -252,7 +252,7 @@
   </head>
   <body>
 
-	<h1>The Freezer <span id="hdrContainer"></span></h1>
+	<h1>The Freezer (<span id="hdrContainer">loading...</span>)</h1>
 
 	<div id="uploadBar">
 		<button id="uploadButton">Upload File</button>
