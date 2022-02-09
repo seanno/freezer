@@ -10,11 +10,11 @@
             "route": "/index.html",
             "allowedRoles": [ "contributor" ]
         },{
-            "route": "/api/*",
+            "route": "/",
+            "rewrite": "/index.html",
             "allowedRoles": [ "contributor" ]
         },{
             "route": "/*",
-            "rewrite": "/index.html",
             "allowedRoles": [ "contributor" ]
         }
     ],
