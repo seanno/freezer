@@ -43,29 +43,33 @@ class Freezer {
                '/' + name);
     }
 
-    async getBlobToken(name, perms) {
+    async getBlobToken(name, forDownload) {
 
         await this._ensureContainer();
 
-        const token = generateBlobSASQueryParameters({
+        const params = {
             containerName: this.getContainerName(),
-            permissions: ContainerSASPermissions.parse(perms),
+            permissions: ContainerSASPermissions.parse(forDownload ? 'r' : 'acw'),
             blobName: name, 
-            expiresOn: new Date(new Date().valueOf() + 86400),
-            contentType: 'application/octet-stream',
-            contentDisposition: 'attachment; filename=' + name
-        }, this.credential);
-        
+            expiresOn: new Date(new Date().valueOf() + 86400000)
+        };
+
+        if (forDownload) {
+            params.contentType = 'application/octet-stream';
+            params.contentDisposition = 'attachment; filename=' + name;
+        }
+
+        const token = generateBlobSASQueryParameters(params, this.credential);
         return(token.toString());
     }
 
-    async getAuthenticatedBlobUrl(name, perms) {
-        const token = await this.getBlobToken(name, perms);
+    async getAuthenticatedBlobUrl(name, forDownload) {
+        const token = await this.getBlobToken(name, forDownload);
         return(this.getBaseBlobUrl(name) + '?' + token);
     }
 
-    async getUploadUrl(name) { return(this.getAuthenticatedBlobUrl(name, 'cw')); }
-    async getDownloadUrl(name) { return(this.getAuthenticatedBlobUrl(name, 'r')); }
+    async getUploadUrl(name) { return(this.getAuthenticatedBlobUrl(name, false)); }
+    async getDownloadUrl(name) { return(this.getAuthenticatedBlobUrl(name, true)); }
 
     // +------------+
     // | deleteFile |
