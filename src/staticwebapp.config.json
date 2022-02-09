@@ -4,26 +4,22 @@
             "route": "/.auth/login/aad",
             "allowedRoles": [ "anonymous", "authenticated" ]
         },{
-            "route": "/.auth/*",
-            "statusCode": 404
-        },{
             "route": "/index.html",
             "allowedRoles": [ "contributor" ]
         },{
-            "route": "/",
-            "rewrite": "/index.html",
+            "route": "/azure-storage-blob.js",
             "allowedRoles": [ "contributor" ]
         },{
-            "route": "/*",
+            "route": "/api/*",
             "allowedRoles": [ "contributor" ]
+        },{
+            "route": "/",
+            "statusCode": 302,
+            "redirect": "/index.html"
         }
     ],
     "responseOverrides": {
         "401": { 
-            "statusCode": 302,
-            "redirect": "/.auth/login/aad"
-        },
-        "403": { 
             "statusCode": 302,
             "redirect": "/.auth/login/aad"
         }
