@@ -1,6 +1,13 @@
 {
+  "scripts": {
+    "build": "webpack"
+  },
   "dependencies": {
     "@azure/storage-blob": "^12.8.0",
     "crypto-js": "^4.1.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.0.0",
+    "webpack-cli": "^5.0.0"
   }
 }
