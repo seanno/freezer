@@ -3,7 +3,6 @@
 
 const User = require('./user');
 const CryptoJS = require('crypto-js');
-const fetch = require('node-fetch');
 
 const { 
     ContainerClient, 
