@@ -214,7 +214,7 @@
 					if (refreshActive) populateFileList('active', files.active);
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					alert('Failed loading files; please refresh.\n' + error);
+					alert('Failed loading files; please refresh.\n' + errorThrown);
 				}
 			});
 		}
